@@ -1,0 +1,51 @@
+name: DVC S3 ML Pipeline - Demo
+
+on:
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  train:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install "dvc[s3]==3.63.0"
+
+      - name: DVC pull demo
+        run: |
+          echo "Mode démonstration : normalement ici on exécute dvc pull depuis S3"
+          echo "dvc pull"
+
+      - name: Train model
+        run: python script.py
+
+      - name: DVC push demo
+        run: |
+          echo "Mode démonstration : normalement ici on exécute dvc push vers S3"
+          echo "dvc push"
+
+      - name: Generate CML report
+        env:
+          REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          pip install cml
+          echo "## Metrics" > report.md
+          cat metrics.txt >> report.md
+          echo "## Confusion Matrix" >> report.md
+          echo "![confusion matrix](./conf_matrix.png)" >> report.md
+          cml comment create report.md
