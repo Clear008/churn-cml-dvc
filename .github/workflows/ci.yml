@@ -23,29 +23,36 @@ jobs:
 
       - name: Install dependencies
         run: |
+          python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install "dvc[s3]==3.63.0"
 
       - name: DVC pull demo
         run: |
-          echo "Mode démonstration : normalement ici on exécute dvc pull depuis S3"
-          echo "dvc pull"
+          echo "Mode démonstration : dvc pull depuis S3 serait exécuté ici"
 
       - name: Train model
         run: python script.py
 
       - name: DVC push demo
         run: |
-          echo "Mode démonstration : normalement ici on exécute dvc push vers S3"
-          echo "dvc push"
+          echo "Mode démonstration : dvc push vers S3 serait exécuté ici"
 
-      - name: Generate CML report
+      - name: Generate report
+        run: |
+          echo "## Metrics" > report.md
+          cat metrics.txt >> report.md
+          echo "" >> report.md
+          echo "## Confusion Matrix" >> report.md
+          echo "![confusion matrix](./conf_matrix.png)" >> report.md
+
+      - name: Publish CML report
+        uses: iterative/setup-cml@v2
+        with:
+          version: latest
+
+      - name: CML comment
         env:
           REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          pip install cml
-          echo "## Metrics" > report.md
-          cat metrics.txt >> report.md
-          echo "## Confusion Matrix" >> report.md
-          echo "![confusion matrix](./conf_matrix.png)" >> report.md
           cml comment create report.md
